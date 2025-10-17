@@ -4,7 +4,7 @@
 
 --授課老師 :蔡芸琤
 
---作業一 個人網站[https://waynebadu.github.io/Waynelab/]
+--作業一 [個人網站](https://waynebadu.github.io/Waynelab/)
 
 
 --作業二 影片[https://youtu.be/YJdZ4-s_XdI]
