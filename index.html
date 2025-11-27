@@ -245,6 +245,39 @@
                         </div>
                     </section>
                     <!-- Services End -->
+                     <!-- Widgets Start -->
+                        <section class="py-5 border-bottom" id="widgets">
+                            <h1 class="title pb-3 mb-5">Wayne 的小工具</h1>
+                            <div class="row g-4">
+                                <!-- 天氣 -->
+                                <div class="col-md-4">
+                                    <h5 class="mb-3">台北即時天氣</h5>
+                                    <p id="weather-text">讀取中...</p>
+                                    <button class="btn btn-primary btn-sm" id="refresh-weather">更新</button>
+                                </div>
+
+                                <!-- 貓咪圖片 -->
+                                <div class="col-md-4">
+                                    <h5 class="mb-3">隨機貓咪圖片</h5>
+                                    <img id="cat-img" class="img-fluid rounded mb-2" alt="隨機貓咪">
+                                    <button class="btn btn-secondary btn-sm" id="new-cat">換一張</button>
+                                </div>
+
+                                <!-- Gemini 小幫手（前端介面） -->
+                                <div class="col-md-4">
+                                    <h5 class="mb-3">Gemini 小幫手</h5>
+                                    <textarea id="gemini-input" class="form-control mb-2" rows="3"
+                                            placeholder="輸入想問 Gemini 的問題..."></textarea>
+                                    <button class="btn btn-success btn-sm" id="ask-gemini">送出</button>
+                                    <div id="gemini-answer"
+                                        class="mt-2 small text-light bg-secondary p-2 rounded"
+                                        style="min-height: 3rem;">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Widgets End -->
+
 
                     <!-- Portfolio Start -->
                     <!--
@@ -404,5 +437,82 @@
 
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
+        <script>
+        // ------- 1. 天氣：用 Open-Meteo，無需 API key，固定顯示台北 -------
+
+        async function loadWeather() {
+            const el = document.getElementById('weather-text');
+            if (!el) return;
+            el.textContent = '讀取中...';
+
+            try {
+                // 台北附近座標：25.05, 121.53
+                const res = await fetch(
+                    'https://api.open-meteo.com/v1/forecast?latitude=25.05&longitude=121.53&current_weather=true'
+                );
+                const data = await res.json();
+                const cw = data.current_weather;
+                el.textContent = `氣溫：${cw.temperature}°C，風速：${cw.windspeed} km/h`;
+            } catch (err) {
+                console.error(err);
+                el.textContent = '天氣讀取失敗，請稍後再試';
+            }
+        }
+
+        document.getElementById('refresh-weather')?.addEventListener('click', loadWeather);
+        loadWeather(); // 一進來就先載一次
+
+        // ------- 2. 貓咪圖片：用 TheCatAPI (免費基本使用) -------
+
+        async function loadCat() {
+            const img = document.getElementById('cat-img');
+            if (!img) return;
+            img.alt = '載入中...';
+
+            try {
+                const res = await fetch('https://api.thecatapi.com/v1/images/search');
+                const data = await res.json();
+                img.src = data[0].url;
+                img.alt = '隨機貓咪';
+            } catch (err) {
+                console.error(err);
+                img.alt = '載入失敗，請稍後再試';
+            }
+        }
+
+        document.getElementById('new-cat')?.addEventListener('click', loadCat);
+        loadCat(); // 一進來就先載一張
+        </script>
+        <script>
+        // ------- 3. Gemini：前端只呼叫你自己的後端，不直接放 API key -------
+
+        document.getElementById('ask-gemini')?.addEventListener('click', async () => {
+            const inputEl  = document.getElementById('gemini-input');
+            const answerEl = document.getElementById('gemini-answer');
+            const text = inputEl.value.trim();
+
+            if (!text) {
+                answerEl.textContent = '請先輸入問題 🙂';
+                return;
+            }
+
+            answerEl.textContent = 'Gemini 思考中...';
+
+            try {
+                
+                const res = await fetch('https://wayne-gemini-backend.onrender.com/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text })
+                });
+                const data = await res.json();
+                answerEl.textContent = data.reply || '沒有收到回應 QQ';
+            } catch (err) {
+                console.error(err);
+                answerEl.textContent = '呼叫 Gemini 失敗，請稍後再試';
+            }
+        });
+        </script>
+
     </body>
 </html>
