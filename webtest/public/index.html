@@ -484,7 +484,7 @@
         loadCat(); // 一進來就先載一張
         </script>
         <script>
-        // ------- 3. Gemini：前端只呼叫你自己的後端，不直接放 API key -------
+        // ------- 3. Gemini：前端只呼叫你自己的後端 -------
 
         document.getElementById('ask-gemini')?.addEventListener('click', async () => {
             const inputEl  = document.getElementById('gemini-input');
@@ -499,20 +499,33 @@
             answerEl.textContent = 'Gemini 思考中...';
 
             try {
-                
-                const res = await fetch('https://wayne-gemini-backend.onrender.com/api/gemini', {
+                // !! 這裡請換成你 Render 後端的真實網址 !!
+                const res = await fetch('https://你的後端服務.onrender.com/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: text })
                 });
+
                 const data = await res.json();
-                answerEl.textContent = data.reply || '沒有收到回應 QQ';
+                console.log('Gemini response:', data);
+
+                if (data.error) {
+                    // 後端有回 error
+                    answerEl.textContent = '伺服器錯誤：' + data.error;
+                } else if (data.reply) {
+                    // 正常回應
+                    answerEl.textContent = data.reply;
+                } else {
+                    // 其他奇怪格式
+                    answerEl.textContent = '回傳格式異常：' + JSON.stringify(data);
+                }
             } catch (err) {
                 console.error(err);
-                answerEl.textContent = '呼叫 Gemini 失敗，請稍後再試';
+                answerEl.textContent = '呼叫失敗，可能是網路或 CORS 問題';
             }
         });
         </script>
+
 
     </body>
 </html>
