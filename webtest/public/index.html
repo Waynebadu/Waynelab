@@ -264,15 +264,17 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <h5 class="mb-3">每日推薦食物</h5>
-                                    <img id="food-img" class="img-fluid rounded mb-2" alt="每日推薦食物">
-                                    <p id="food-text"
+                                    <h5 class="mb-3">每日一貼圖</h5>
+                                    <img id="sticker-img" class="img-fluid rounded mb-2" alt="每日一貼圖">
+                                    <p id="sticker-text"
                                     class="mt-2 small text-light bg-secondary p-2 rounded"
                                     style="min-height: 3rem;">
-                                    讀取中...
+                                    今日貼圖載入中...
                                     </p>
-                                    <button class="btn btn-success btn-sm mb-2" id="get-food">換一個</button>
+                                    <button class="btn btn-success btn-sm mb-2" id="get-sticker">換一張</button>
                                 </div>
+
+
 
 
                             </div>
@@ -485,42 +487,40 @@
         loadCat(); // 一進來就先載一張
         </script>
         <script>
-            // 每日推薦食物：呼叫自己後端的 /api/food
-            async function loadFood() {
-                const textEl = document.getElementById('food-text');
-                const imgEl  = document.getElementById('food-img');
-                if (!textEl || !imgEl) return;
+            // 每日一貼圖：使用 yesno.wtf API（支援 CORS，前端可直接用）
+            async function loadSticker() {
+                const imgEl   = document.getElementById('sticker-img');
+                const textEl  = document.getElementById('sticker-text');
 
-                textEl.textContent = "讀取中...";
+                if (!imgEl || !textEl) return;
+
+                textEl.textContent = "載入中...";
+                imgEl.src = "";
                 imgEl.alt = "載入中...";
 
                 try {
-                    // TODO：把這裡換成你的 Render 後端網址
-                    const res = await fetch("https://你的-backend.onrender.com/api/food");
+                    const res = await fetch("https://yesno.wtf/api");
                     const data = await res.json();
+                    // data.image 是一個 GIF 圖片網址
 
-                    if (data.error) {
-                        textEl.textContent = "取得失敗：" + data.error;
-                        imgEl.alt = "載入失敗";
-                        return;
-                    }
-
-                    // 顯示餐點資訊
-                    textEl.textContent =
-                        `今日推薦：${data.name}（${data.area}・${data.category}）`;
                     imgEl.src = data.image;
-                    imgEl.alt = data.name;
+                    imgEl.alt = "每日一貼圖";
+                    // 這裡用 answer 當有趣的小文字（yes/no/maybe）
+                    textEl.textContent = `今日心情：${data.answer.toUpperCase()}！`;
                 } catch (err) {
                     console.error(err);
-                    textEl.textContent = "推薦食物取得失敗 😢";
+                    textEl.textContent = "貼圖取得失敗 😢";
                     imgEl.alt = "載入失敗";
                 }
             }
 
-            document.getElementById("get-food")?.addEventListener("click", loadFood);
-            // 一進頁面就先推薦一次
-            loadFood();
+            // 按鈕：換一張貼圖
+            document.getElementById("get-sticker")?.addEventListener("click", loadSticker);
+
+            // 一進頁面自動載入一張
+            loadSticker();
         </script>
+
 
 
 
