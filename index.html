@@ -264,14 +264,16 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <h5 class="mb-3">每日一句勵志話</h5>
-                                    <button class="btn btn-success btn-sm mb-2" id="get-quote">換一句</button>
-                                    <div id="quote-text"
-                                        class="mt-2 small text-light bg-secondary p-2 rounded"
-                                        style="min-height: 3rem;">
-                                        讀取中...
-                                    </div>
+                                    <h5 class="mb-3">每日推薦食物</h5>
+                                    <img id="food-img" class="img-fluid rounded mb-2" alt="每日推薦食物">
+                                    <p id="food-text"
+                                    class="mt-2 small text-light bg-secondary p-2 rounded"
+                                    style="min-height: 3rem;">
+                                    讀取中...
+                                    </p>
+                                    <button class="btn btn-success btn-sm mb-2" id="get-food">換一個</button>
                                 </div>
+
 
                             </div>
                         </section>
@@ -483,35 +485,43 @@
         loadCat(); // 一進來就先載一張
         </script>
         <script>
-            // 每日一句：改用 type.fit 的 quotes API（支援 CORS）
-            async function loadQuote() {
-                const el = document.getElementById('quote-text');
-                if (!el) return;
+            // 每日推薦食物：呼叫自己後端的 /api/food
+            async function loadFood() {
+                const textEl = document.getElementById('food-text');
+                const imgEl  = document.getElementById('food-img');
+                if (!textEl || !imgEl) return;
 
-                el.textContent = "讀取中...";
+                textEl.textContent = "讀取中...";
+                imgEl.alt = "載入中...";
 
                 try {
-                    // 一次回傳很多句名言的陣列
-                    const res = await fetch("https://type.fit/api/quotes");
+                    // TODO：把這裡換成你的 Render 後端網址
+                    const res = await fetch("https://你的-backend.onrender.com/api/food");
                     const data = await res.json();
 
-                    // 隨機選一筆
-                    const random = data[Math.floor(Math.random() * data.length)];
+                    if (data.error) {
+                        textEl.textContent = "取得失敗：" + data.error;
+                        imgEl.alt = "載入失敗";
+                        return;
+                    }
 
-                    const text = random.text || "今天也要加油喔！";
-                    const author = random.author || "Unknown";
-
-                    el.textContent = `「${text}」 — ${author}`;
+                    // 顯示餐點資訊
+                    textEl.textContent =
+                        `今日推薦：${data.name}（${data.area}・${data.category}）`;
+                    imgEl.src = data.image;
+                    imgEl.alt = data.name;
                 } catch (err) {
                     console.error(err);
-                    el.textContent = "名言取得失敗 😢";
+                    textEl.textContent = "推薦食物取得失敗 😢";
+                    imgEl.alt = "載入失敗";
                 }
             }
 
-            document.getElementById("get-quote")?.addEventListener("click", loadQuote);
-            // 進頁面時先載一則
-            loadQuote();
+            document.getElementById("get-food")?.addEventListener("click", loadFood);
+            // 一進頁面就先推薦一次
+            loadFood();
         </script>
+
 
 
 
