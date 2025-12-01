@@ -483,31 +483,38 @@
         loadCat(); // 一進來就先載一張
         </script>
         <script>
-        // ------- 每日一句勵志話：呼叫公開名言 API -------
+            // 每日一句：改用 type.fit 的 quotes API（支援 CORS）
+            async function loadQuote() {
+                const el = document.getElementById('quote-text');
+                if (!el) return;
 
-        async function loadQuote() {
-            const el = document.getElementById('quote-text');
-            if (!el) return;
+                el.textContent = "讀取中...";
 
-            el.textContent = '取得中...';
+                try {
+                    // 一次回傳很多句名言的陣列
+                    const res = await fetch("https://type.fit/api/quotes");
+                    const data = await res.json();
 
-            try {
-                const res = await fetch('https://api.quotable.io/random?tags=motivational|inspirational');
-                const data = await res.json();
+                    // 隨機選一筆
+                    const random = data[Math.floor(Math.random() * data.length)];
 
-                // API 回傳格式：{ content: "...", author: "..." }
-                el.textContent = `「${data.content}」 — ${data.author}`;
-            } catch (err) {
-                console.error(err);
-                el.textContent = '取得失敗，請稍後再試 🙏';
+                    const text = random.text || "今天也要加油喔！";
+                    const author = random.author || "Unknown";
+
+                    el.textContent = `「${text}」 — ${author}`;
+                } catch (err) {
+                    console.error(err);
+                    el.textContent = "名言取得失敗 😢";
+                }
             }
-        }
 
-        document.getElementById('get-quote')?.addEventListener('click', loadQuote);
-
-        // 一進頁面就先載入一次
-        loadQuote();
+            document.getElementById("get-quote")?.addEventListener("click", loadQuote);
+            // 進頁面時先載一則
+            loadQuote();
         </script>
+
+
+
 
 
 
