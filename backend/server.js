@@ -36,6 +36,30 @@ app.post('/api/gemini', async (req, res) => {
 
 // Render / 本機啟動用的 port
 const PORT = process.env.PORT || 3000;
+// 每日推薦食物：後端幫你去抓 TheMealDB 的隨機餐點
+app.get('/api/food', async (req, res) => {
+  try {
+    const response = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
+    const data = await response.json();
+
+    const meal = data.meals?.[0];
+    if (!meal) {
+      return res.status(500).json({ error: '找不到餐點資料' });
+    }
+
+    // 精簡後再回給前端
+    res.json({
+      name: meal.strMeal,          // 菜名
+      category: meal.strCategory,  // 類別：Dessert、Beef...
+      area: meal.strArea,          // 地區：Japanese、Italian...
+      instructions: meal.strInstructions, // 作法（如果之後要用）
+      image: meal.strMealThumb     // 食物圖片
+    });
+  } catch (err) {
+    console.error('Food API error:', err);
+    res.status(500).json({ error: 'Food API 發生錯誤' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Gemini backend listening on port ${PORT}`);
