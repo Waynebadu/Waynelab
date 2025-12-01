@@ -263,17 +263,16 @@
                                     <button class="btn btn-secondary btn-sm" id="new-cat">換一張</button>
                                 </div>
 
-                                <!-- Gemini 小幫手（前端介面） -->
                                 <div class="col-md-4">
-                                    <h5 class="mb-3">Gemini 小幫手</h5>
-                                    <textarea id="gemini-input" class="form-control mb-2" rows="3"
-                                            placeholder="輸入想問 Gemini 的問題..."></textarea>
-                                    <button class="btn btn-success btn-sm" id="ask-gemini">送出</button>
-                                    <div id="gemini-answer"
+                                    <h5 class="mb-3">每日一句勵志話</h5>
+                                    <button class="btn btn-success btn-sm mb-2" id="get-quote">換一句</button>
+                                    <div id="quote-text"
                                         class="mt-2 small text-light bg-secondary p-2 rounded"
                                         style="min-height: 3rem;">
+                                        讀取中...
                                     </div>
                                 </div>
+
                             </div>
                         </section>
                         <!-- Widgets End -->
@@ -484,47 +483,32 @@
         loadCat(); // 一進來就先載一張
         </script>
         <script>
-        // ------- 3. Gemini：前端只呼叫你自己的後端 -------
+        // ------- 每日一句勵志話：呼叫公開名言 API -------
 
-        document.getElementById('ask-gemini')?.addEventListener('click', async () => {
-            const inputEl  = document.getElementById('gemini-input');
-            const answerEl = document.getElementById('gemini-answer');
-            const text = inputEl.value.trim();
+        async function loadQuote() {
+            const el = document.getElementById('quote-text');
+            if (!el) return;
 
-            if (!text) {
-                answerEl.textContent = '請先輸入問題 🙂';
-                return;
-            }
-
-            answerEl.textContent = 'Gemini 思考中...';
+            el.textContent = '取得中...';
 
             try {
-                // !! 這裡請換成你 Render 後端的真實網址 !!
-                const res = await fetch('https://你的後端服務.onrender.com/api/gemini', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: text })
-                });
-
+                const res = await fetch('https://api.quotable.io/random?tags=motivational|inspirational');
                 const data = await res.json();
-                console.log('Gemini response:', data);
 
-                if (data.error) {
-                    // 後端有回 error
-                    answerEl.textContent = '伺服器錯誤：' + data.error;
-                } else if (data.reply) {
-                    // 正常回應
-                    answerEl.textContent = data.reply;
-                } else {
-                    // 其他奇怪格式
-                    answerEl.textContent = '回傳格式異常：' + JSON.stringify(data);
-                }
+                // API 回傳格式：{ content: "...", author: "..." }
+                el.textContent = `「${data.content}」 — ${data.author}`;
             } catch (err) {
                 console.error(err);
-                answerEl.textContent = '呼叫失敗，可能是網路或 CORS 問題';
+                el.textContent = '取得失敗，請稍後再試 🙏';
             }
-        });
+        }
+
+        document.getElementById('get-quote')?.addEventListener('click', loadQuote);
+
+        // 一進頁面就先載入一次
+        loadQuote();
         </script>
+
 
 
     </body>
